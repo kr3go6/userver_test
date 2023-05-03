@@ -1,8 +1,14 @@
 #include "getresource.hpp"
 
 #include <userver/server/handlers/exceptions.hpp>
+#include <userver/engine/exception.hpp>
+#include <userver/engine/task/task.hpp>
+#include <userver/engine/task/cancel.hpp>
+#include <userver/engine/task/task_processor_fwd.hpp>
+#include <userver/fs/read.hpp>
 
-namespace fs = std::filesystem;
+
+namespace std_fs = std::filesystem;
 
 class FileNotFoundException final : public userver::server::handlers::CustomHandlerException
 {
@@ -31,26 +37,32 @@ public:
                 HandlerErrorCode::kResourceNotFound) {}
 };
 
-std::string file_to_string(fs::path& filepath)
+std::string file_to_string(std_fs::path& filepath)
 {
     std::error_code ec;
-    fs::path canonical_filepath = fs::canonical(filepath, ec);
+    std_fs::path canonical_filepath = std_fs::canonical(filepath, ec);
     
     if (ec) {
         throw FileNotFoundException(ec.message());
     }
 
-    return canonical_filepath;
+    return userver::fs::ReadFileContents(
+            userver::engine::current_task::GetTaskProcessor(), 
+            canonical_filepath
+    );
 }
 
-std::string file_to_string(fs::path&& filepath)
+std::string file_to_string(std_fs::path&& filepath)
 {
     std::error_code ec;
-    fs::path canonical_filepath = fs::canonical(filepath, ec);
+    std_fs::path canonical_filepath = std_fs::canonical(filepath, ec);
     
     if (ec) {
         throw FileNotFoundException(ec.message());
     }
 
-    return canonical_filepath;
+    return userver::fs::ReadFileContents(
+            userver::engine::current_task::GetTaskProcessor(), 
+            std::move(canonical_filepath)
+    );
 }
