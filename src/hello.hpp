@@ -5,10 +5,8 @@
 
 #include <userver/components/component_list.hpp>
 
-namespace service_template {
+namespace service_index {
 
-std::string SayHelloTo(std::string_view name);
+void AppendIndex(userver::components::ComponentList &component_list);
 
-void AppendHello(userver::components::ComponentList &component_list);
-
-} // namespace service_template
+} // namespace service_index
